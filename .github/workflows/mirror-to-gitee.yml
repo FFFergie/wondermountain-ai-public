@@ -1,0 +1,20 @@
+name: Mirror to Gitee
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    if: ${{ vars.GITEE_REPOSITORY != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Mirror to Gitee
+        run: |
+          git remote add gitee https://oauth2:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ vars.GITEE_REPOSITORY }}.git
+          git push --mirror gitee

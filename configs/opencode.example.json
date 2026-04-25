@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "profile": "wonder-mountain",
+  "notes": [
+    "Wonder Mountain OpenCode configuration template.",
+    "Do not commit API keys or personal tokens into this file.",
+    "Agents should review and merge this template into the user's real OpenCode config manually."
+  ],
+  "provider": {
+    "wonder-mountain-ai": {
+      "name": "Wonder Mountain AI Gateway",
+      "baseURL": "https://YOUR_AI_API_ENDPOINT/v1",
+      "apiKey": "READ_FROM_LOCAL_SECRET_OR_ENVIRONMENT",
+      "models": {
+        "wonder-mountain-default": {
+          "name": "Wonder Mountain Default",
+          "model": "YOUR_MODEL_ID",
+          "temperature": 0.2,
+          "maxTokens": 8192
+        },
+        "wonder-mountain-fast": {
+          "name": "Wonder Mountain Fast",
+          "model": "YOUR_FAST_MODEL_ID",
+          "temperature": 0.1,
+          "maxTokens": 4096
+        }
+      }
+    }
+  }
+}
