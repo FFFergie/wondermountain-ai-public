@@ -21,11 +21,11 @@ This guide is for Wonder Mountain maintainers.
 
 Use this workflow only on a maintainer machine. Employees should still install from this repository, not from skills.sh.
 
-1. Copy the original skills.sh command, such as `npx skills add https://github.com/vercel-labs/skills --skill find-skills`.
+1. Copy the original skills.sh command. Single-skill commands can include `--skill`, such as `npx skills add https://github.com/vercel-labs/skills --skill find-skills`; package commands can omit it, such as `npx skills add bs779517/story-skills`.
 2. On macOS or Linux, run `bash scripts/import-skill.sh` from the repository root and paste the command when prompted.
 3. On Windows, run `powershell -ExecutionPolicy Bypass -File scripts/import-skill.ps1` from the repository root and paste the command when prompted.
-4. The importer sets `DISABLE_TELEMETRY=1` and rewrites the install target to `-a openclaw --copy -y`, which makes `npx skills` copy the selected skill into this repository's `skills/` directory.
-5. Review the generated `skills/<skill-name>/SKILL.md` and `skills-lock.json` before committing.
+4. The importer sets `DISABLE_TELEMETRY=1` and rewrites the install target to `-a openclaw --copy -y`, which makes `npx skills` copy the selected skill or package into this repository's `skills/` directory.
+5. Review the generated `skills/<skill-name>/SKILL.md` files, any package-created skill directories, and `skills-lock.json` before committing.
 6. Run `bash tests/validate-project.sh` before publishing.
 
 Do not paste commands that already include `--agent`, `-a`, `--global`, or `-g`. The importer rejects those flags so maintainers do not accidentally install into a user-level OpenCode directory.

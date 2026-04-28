@@ -6,7 +6,9 @@ if ($args.Count -gt 0) {
     $OriginalCommand = $args -join " "
 } else {
     Write-Host "Paste the original skills.sh command, then press Enter:"
-    Write-Host "Example: npx skills add https://github.com/vercel-labs/skills --skill find-skills"
+    Write-Host "Examples:"
+    Write-Host "  npx skills add https://github.com/vercel-labs/skills --skill find-skills"
+    Write-Host "  npx skills add bs779517/story-skills"
     $OriginalCommand = Read-Host ">"
 }
 
@@ -54,27 +56,46 @@ if ([string]::IsNullOrWhiteSpace($Source)) {
     exit 1
 }
 
-if ([string]::IsNullOrWhiteSpace($SkillName)) {
-    Write-Error "Missing --skill <name> or -s <name>."
-    exit 1
-}
-
-if ($SkillName.Contains("/") -or $SkillName.Contains("\")) {
+if (-not [string]::IsNullOrWhiteSpace($SkillName) -and ($SkillName.Contains("/") -or $SkillName.Contains("\"))) {
     Write-Error "Skill name must not contain path separators: $SkillName"
     exit 1
 }
 
 Set-Location $RootDir
 
+function Get-SkillNames {
+    if (-not (Test-Path -Path "skills" -PathType Container)) {
+        return @()
+    }
+
+    return @(Get-ChildItem -Path "skills" -Directory | Where-Object {
+        Test-Path -Path (Join-Path $_.FullName "SKILL.md") -PathType Leaf
+    } | ForEach-Object {
+        $_.Name
+    } | Sort-Object)
+}
+
+$BeforeSkills = @(Get-SkillNames)
+
+$ImportArgs = @("skills", "add", $Source)
+if (-not [string]::IsNullOrWhiteSpace($SkillName)) {
+    $ImportArgs += @("--skill", $SkillName)
+}
+$ImportArgs += @("-a", "openclaw", "--copy", "-y")
+
 Write-Host "Importing skill into repository skills directory..."
 Write-Host "Source: $Source"
-Write-Host "Skill: $SkillName"
-Write-Host "Command: `$env:DISABLE_TELEMETRY=1; npx skills add $Source --skill $SkillName -a openclaw --copy -y"
+if (-not [string]::IsNullOrWhiteSpace($SkillName)) {
+    Write-Host "Skill: $SkillName"
+} else {
+    Write-Host "Skill: all skills from source"
+}
+Write-Host "Command: `$env:DISABLE_TELEMETRY=1; npx $($ImportArgs -join ' ')"
 
 $PreviousTelemetry = $env:DISABLE_TELEMETRY
 $env:DISABLE_TELEMETRY = "1"
 try {
-    & npx skills add $Source --skill $SkillName -a openclaw --copy -y
+    & npx @ImportArgs
 } finally {
     $env:DISABLE_TELEMETRY = $PreviousTelemetry
 }
@@ -83,11 +104,20 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-$SkillFile = Join-Path $RootDir (Join-Path "skills" (Join-Path $SkillName "SKILL.md"))
-if (-not (Test-Path -Path $SkillFile -PathType Leaf)) {
-    Write-Error "Import finished, but skills/$SkillName/SKILL.md was not found. Review the generated skills directory manually."
+$AfterSkills = @(Get-SkillNames)
+
+if (-not [string]::IsNullOrWhiteSpace($SkillName)) {
+    $SkillFile = Join-Path $RootDir (Join-Path "skills" (Join-Path $SkillName "SKILL.md"))
+    if (-not (Test-Path -Path $SkillFile -PathType Leaf)) {
+        Write-Error "Import finished, but skills/$SkillName/SKILL.md was not found. Review the generated skills directory manually."
+        exit 1
+    }
+} elseif ($AfterSkills.Count -eq 0) {
+    Write-Error "Import finished, but no skills/*/SKILL.md files were found. Review the generated skills directory manually."
     exit 1
 }
+
+$NewSkills = @($AfterSkills | Where-Object { $BeforeSkills -notcontains $_ })
 
 if (Get-Command bash -ErrorAction SilentlyContinue) {
     & bash tests/validate-project.sh
@@ -100,9 +130,21 @@ if (Get-Command bash -ErrorAction SilentlyContinue) {
 
 Write-Host ""
 Write-Host "Skill imported. Review these files before committing:"
-Write-Host "- skills/$SkillName/SKILL.md"
+if (-not [string]::IsNullOrWhiteSpace($SkillName)) {
+    Write-Host "- skills/$SkillName/SKILL.md"
+} elseif ($NewSkills.Count -gt 0) {
+    foreach ($ImportedSkill in $NewSkills) {
+        Write-Host "- skills/$ImportedSkill/SKILL.md"
+    }
+} else {
+    Write-Host "- skills/ (review git status for updated skill directories)"
+}
 Write-Host "- skills-lock.json"
 Write-Host ""
 Write-Host "Suggested review commands:"
 Write-Host "git status --short"
-Write-Host "git diff -- skills/$SkillName skills-lock.json"
+if (-not [string]::IsNullOrWhiteSpace($SkillName)) {
+    Write-Host "git diff -- skills/$SkillName skills-lock.json"
+} else {
+    Write-Host "git diff -- skills skills-lock.json"
+}

@@ -7,7 +7,9 @@ if [[ $# -gt 0 ]]; then
   ORIGINAL_COMMAND="$*"
 else
   printf 'Paste the original skills.sh command, then press Enter:\n'
-  printf 'Example: npx skills add https://github.com/vercel-labs/skills --skill find-skills\n> '
+  printf 'Examples:\n'
+  printf '  npx skills add https://github.com/vercel-labs/skills --skill find-skills\n'
+  printf '  npx skills add bs779517/story-skills\n> '
   read -r ORIGINAL_COMMAND
 fi
 
@@ -64,35 +66,79 @@ if [[ -z "$SOURCE" ]]; then
   exit 1
 fi
 
-if [[ -z "$SKILL_NAME" ]]; then
-  printf 'Missing --skill <name> or -s <name>.\n' >&2
-  exit 1
-fi
-
-if [[ "$SKILL_NAME" == */* || "$SKILL_NAME" == *\\* ]]; then
+if [[ -n "$SKILL_NAME" && ("$SKILL_NAME" == */* || "$SKILL_NAME" == *\\*) ]]; then
   printf 'Skill name must not contain path separators: %s\n' "$SKILL_NAME" >&2
   exit 1
 fi
 
 cd "$ROOT_DIR"
 
+list_skill_names() {
+  local skill_file
+  local skill_dir
+  shopt -s nullglob
+  for skill_file in skills/*/SKILL.md; do
+    skill_dir="${skill_file%/SKILL.md}"
+    printf '%s\n' "${skill_dir#skills/}"
+  done | sort
+  shopt -u nullglob
+}
+
+BEFORE_SKILLS="$(list_skill_names)"
+
+IMPORT_COMMAND=(npx skills add "$SOURCE")
+if [[ -n "$SKILL_NAME" ]]; then
+  IMPORT_COMMAND+=(--skill "$SKILL_NAME")
+fi
+IMPORT_COMMAND+=(-a openclaw --copy -y)
+
 printf 'Importing skill into repository skills directory...\n'
 printf 'Source: %s\n' "$SOURCE"
-printf 'Skill: %s\n' "$SKILL_NAME"
-printf 'Command: DISABLE_TELEMETRY=1 npx skills add %s --skill %s -a openclaw --copy -y\n' "$SOURCE" "$SKILL_NAME"
-
-DISABLE_TELEMETRY=1 npx skills add "$SOURCE" --skill "$SKILL_NAME" -a openclaw --copy -y
-
-if [[ ! -f "skills/$SKILL_NAME/SKILL.md" ]]; then
-  printf 'Import finished, but skills/%s/SKILL.md was not found. Review the generated skills directory manually.\n' "$SKILL_NAME" >&2
-  exit 1
+if [[ -n "$SKILL_NAME" ]]; then
+  printf 'Skill: %s\n' "$SKILL_NAME"
+else
+  printf 'Skill: all skills from source\n'
 fi
+printf 'Command: DISABLE_TELEMETRY=1'
+printf ' %q' "${IMPORT_COMMAND[@]}"
+printf '\n'
+
+DISABLE_TELEMETRY=1 "${IMPORT_COMMAND[@]}"
+
+AFTER_SKILLS="$(list_skill_names)"
+
+if [[ -n "$SKILL_NAME" ]]; then
+  if [[ ! -f "skills/$SKILL_NAME/SKILL.md" ]]; then
+    printf 'Import finished, but skills/%s/SKILL.md was not found. Review the generated skills directory manually.\n' "$SKILL_NAME" >&2
+    exit 1
+  fi
+else
+  if [[ -z "$AFTER_SKILLS" ]]; then
+    printf 'Import finished, but no skills/*/SKILL.md files were found. Review the generated skills directory manually.\n' >&2
+    exit 1
+  fi
+fi
+
+NEW_SKILLS="$(comm -13 <(printf '%s\n' "$BEFORE_SKILLS") <(printf '%s\n' "$AFTER_SKILLS") || true)"
 
 bash tests/validate-project.sh
 
 printf '\nSkill imported. Review these files before committing:\n'
-printf '%s\n' "- skills/$SKILL_NAME/SKILL.md"
+if [[ -n "$SKILL_NAME" ]]; then
+  printf '%s\n' "- skills/$SKILL_NAME/SKILL.md"
+elif [[ -n "$NEW_SKILLS" ]]; then
+  while IFS= read -r imported_skill; do
+    [[ -z "$imported_skill" ]] && continue
+    printf '%s\n' "- skills/$imported_skill/SKILL.md"
+  done <<< "$NEW_SKILLS"
+else
+  printf '%s\n' '- skills/ (review git status for updated skill directories)'
+fi
 printf '%s\n' '- skills-lock.json'
 printf '\nSuggested review commands:\n'
 printf 'git status --short\n'
-printf 'git diff -- skills/%s skills-lock.json\n' "$SKILL_NAME"
+if [[ -n "$SKILL_NAME" ]]; then
+  printf 'git diff -- skills/%s skills-lock.json\n' "$SKILL_NAME"
+else
+  printf 'git diff -- skills skills-lock.json\n'
+fi

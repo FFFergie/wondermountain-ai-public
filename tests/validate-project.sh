@@ -36,6 +36,7 @@ require_file "scripts/install.sh"
 require_file "scripts/install.ps1"
 require_file "scripts/import-skill.sh"
 require_file "scripts/import-skill.ps1"
+require_file "tests/test-import-skill.sh"
 require_file ".github/workflows/mirror-to-gitee.yml"
 require_file "docs/maintainer-guide.md"
 
@@ -49,13 +50,18 @@ require_text "scripts/import-skill.sh" "-a openclaw"
 require_text "scripts/import-skill.sh" "--copy"
 require_text "scripts/import-skill.sh" "--agent"
 require_text "scripts/import-skill.sh" "--global"
+require_text "scripts/import-skill.sh" "all skills from source"
 require_text "scripts/import-skill.sh" 'printf '\''%s\n'\'' "- skills/$SKILL_NAME/SKILL.md"'
 require_text "scripts/import-skill.ps1" "DISABLE_TELEMETRY"
 require_text "scripts/import-skill.ps1" "openclaw"
 require_text "scripts/import-skill.ps1" "--copy"
+require_text "scripts/import-skill.ps1" "all skills from source"
 require_text "docs/maintainer-guide.md" "scripts/import-skill.sh"
 require_text "docs/maintainer-guide.md" "skills-lock.json"
+require_text "docs/maintainer-guide.md" "bs779517/story-skills"
 require_text ".github/workflows/mirror-to-gitee.yml" "git push --mirror gitee"
 require_text "configs/opencode.example.json" "wonder-mountain"
+
+bash "$ROOT_DIR/tests/test-import-skill.sh"
 
 printf 'Project structure validation passed.\n'
