@@ -4,10 +4,20 @@ This repository distributes Wonder Mountain OpenCode setup materials for everyda
 
 中文说明：这是万象蒙泰（Wonder Mountain）OpenCode 配置与 skills 分发仓库。使用者只需要把这个仓库的 Gitee 地址交给 OpenCode，让 AI agent 按本 README 完成安装。
 
+## User Prompt For OpenCode
+
+Users can give OpenCode this repository URL with the following prompt:
+
+```text
+请读取这个 Gitee 仓库，按照 README 的 Agent Installation Policy，把 OpenCode 配置模板和 skills 安装到我的 ~/.config/opencode。安装前请先运行诊断检查并备份现有配置，不要覆盖我的 opencode.json，不要猜测其他路径。
+```
+
 ## What This Repository Contains
 
 - `configs/opencode.example.json`: OpenCode 配置模板，用于记录第三方 AI API、模型名称和模型参数。
 - `skills/`: 常用 skills 的离线分发目录，避免依赖 `npx`、Node.js、GitHub 网络或 skills.sh。
+- `scripts/doctor.sh`: macOS/Linux read-only environment check before installation.
+- `scripts/doctor.ps1`: Windows PowerShell read-only environment check before installation.
 - `scripts/install.sh`: macOS 可选安装脚本。
 - `scripts/install.ps1`: Windows PowerShell 可选安装脚本。
 - `docs/maintainer-guide.md`: 维护者说明，记录如何新增模型配置和 skills。
@@ -20,9 +30,10 @@ AI agent must follow these rules:
 1. Treat GitHub as the source repository and Gitee as the distribution mirror.
 2. Use only the default OpenCode directory: `~/.config/opencode`.
 3. Do not guess alternative paths.
-4. If `~/.config/opencode` does not exist, stop and tell the user to contact the maintainer on Feishu.
-5. Do not overwrite existing user configuration without first creating a timestamped backup.
-6. Never write API keys, access tokens, or personal credentials into this repository.
+4. Run the read-only doctor check before installation.
+5. If `~/.config/opencode` does not exist, stop and tell the user to contact the maintainer on Feishu.
+6. Do not overwrite existing user configuration without first creating a timestamped backup.
+7. Never write API keys, access tokens, endpoint secrets, or personal credentials into this repository.
 
 ## Default Target Path
 
@@ -49,25 +60,38 @@ If this directory does not exist, report this message to the user:
 When a user gives this Gitee repository to OpenCode, the AI agent should:
 
 1. Clone or download this repository from Gitee.
-2. Check whether `~/.config/opencode` exists.
-3. If the directory does not exist, stop and ask the user to contact the maintainer on Feishu.
-4. Back up existing OpenCode files into `~/.config/opencode/backups/wonder-mountain-<timestamp>/`.
-5. Copy `configs/opencode.example.json` into `~/.config/opencode/wonder-mountain/opencode.example.json`.
-6. Copy skill folders from `skills/` into `~/.config/opencode/skills/`.
-7. If the user already has an OpenCode config file, merge model/provider settings manually after reviewing both files.
-8. Tell the user what changed and where the backup is stored.
+2. Run the read-only doctor check for the current platform.
+3. Check whether `~/.config/opencode` exists.
+4. If the directory does not exist, stop and ask the user to contact the maintainer on Feishu.
+5. Back up existing OpenCode files into `~/.config/opencode/backups/wonder-mountain-<timestamp>/`.
+6. Copy `configs/opencode.example.json` into `~/.config/opencode/wonder-mountain/opencode.example.json`.
+7. Copy skill folders from `skills/` into `~/.config/opencode/skills/`.
+8. If the user already has an OpenCode config file, merge model/provider settings manually after reviewing both files.
+9. Tell the user what changed and where the backup is stored.
 
 ## Optional Script Usage
 
 The scripts perform safe file distribution only. They do not merge JSON automatically because OpenCode config files may differ across user machines.
 
-### macOS
+### macOS Diagnosis
+
+```bash
+bash scripts/doctor.sh
+```
+
+### Windows PowerShell Diagnosis
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/doctor.ps1
+```
+
+### macOS Install
 
 ```bash
 bash scripts/install.sh
 ```
 
-### Windows PowerShell
+### Windows PowerShell Install
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/install.ps1
@@ -75,9 +99,9 @@ powershell -ExecutionPolicy Bypass -File scripts/install.ps1
 
 ## OpenCode Config Template
 
-The template at `configs/opencode.example.json` is intentionally an example. Maintainers should update it with real model names and model parameters, but must not commit personal secrets.
+The template at `configs/opencode.example.json` is intentionally an example. Maintainers should update it with real model names and model parameters, but must not commit personal secrets, endpoint secrets, account tokens, or employee-specific credentials.
 
-If API keys are required, users or administrators should keep them in the user's local environment or local OpenCode config outside version control.
+If API keys are required, users or administrators should keep them in the user's local environment, local OpenCode config, or another approved private channel outside version control.
 
 ## Gitee Mirror
 

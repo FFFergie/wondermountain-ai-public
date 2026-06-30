@@ -1,0 +1,5 @@
+# macOS metadata
+.DS_Store
+
+# Maintainer-local public safety rules. Do not commit this file.
+tests/private-forbidden-patterns.txt

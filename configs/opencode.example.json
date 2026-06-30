@@ -3,8 +3,9 @@
   "profile": "wonder-mountain",
   "notes": [
     "Wonder Mountain OpenCode configuration template.",
-    "Do not commit API keys or personal tokens into this file.",
-    "Agents should review and merge this template into the user's real OpenCode config manually."
+    "Do not commit API keys, endpoint secrets, account tokens, or personal credentials into this file.",
+    "Agents should review and merge this template into the user's real OpenCode config manually.",
+    "Keep real provider endpoints and API keys in local user configuration or another approved private channel."
   ],
   "provider": {
     "wonder-mountain-ai": {

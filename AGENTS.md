@@ -23,7 +23,8 @@
 ## Verification
 
 - Run `bash tests/validate-project.sh` after any repo structure, docs, config, workflow, or script change.
-- When editing shell scripts, also run `bash -n scripts/install.sh` and `bash -n scripts/import-skill.sh`.
+- Run `bash scripts/doctor.sh` before local install smoke tests; it is read-only and must not print secrets.
+- When editing shell scripts, also run `bash -n scripts/install.sh`, `bash -n scripts/import-skill.sh`, and `bash -n scripts/doctor.sh`.
 - PowerShell scripts mirror the Bash scripts; verify with `pwsh` only when it is available locally.
 
 ## Release And Mirror
@@ -36,3 +37,4 @@
 
 - Keep Wonder Mountain / 万象蒙泰 as the brand name, but keep usage and procurement wording neutral.
 - Do not add private operational details, access tokens, customer data, or credentials to tracked files.
+- `tests/validate-project.sh` loads optional private forbidden patterns from `tests/private-forbidden-patterns.txt` or `PRIVATE_FORBIDDEN_PATTERNS`; do not commit the private pattern list.
