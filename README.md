@@ -128,4 +128,4 @@ This project should be developed on GitHub and mirrored to Gitee by GitHub Actio
 - Secret: `GITEE_TOKEN`
 - Variable: `GITEE_REPOSITORY`, for example `wondermountain/wondermountain-ai-public`
 
-The workflow uses `git push --mirror gitee`, so Gitee should remain a mirror only.
+The workflow pushes branches and tags to Gitee while avoiding hidden remote-tracking refs, so Gitee should remain a distribution mirror only.

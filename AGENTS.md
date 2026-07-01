@@ -31,7 +31,7 @@
 ## Release And Mirror
 
 - GitHub is the source repository; Gitee is a mirror driven by `.github/workflows/mirror-to-gitee.yml`.
-- The mirror workflow needs GitHub secret `GITEE_TOKEN` and variable `GITEE_REPOSITORY`; it uses `git push --mirror gitee`.
+- The mirror workflow needs GitHub secret `GITEE_TOKEN` and variable `GITEE_REPOSITORY`; it pushes branches and tags only, not hidden remote-tracking refs.
 - Confirm with the repository owner before any push, force push, or history rewrite.
 
 ## Public Copy Constraints

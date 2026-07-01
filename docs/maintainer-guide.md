@@ -72,7 +72,7 @@ Do not commit any file copied from `~/.config/opencode` during this smoke test.
 4. Push to GitHub after confirming with the repository owner.
 5. Configure GitHub secret `GITEE_TOKEN` with a Gitee token that can push to the target repository.
 6. Configure GitHub variable `GITEE_REPOSITORY` with the Gitee path, such as `wondermountain/wondermountain-ai-public`.
-7. GitHub Actions mirrors the repository to Gitee with `git push --mirror gitee`.
+7. GitHub Actions mirrors branches and tags to Gitee while avoiding hidden remote-tracking refs.
 8. Give employees the Gitee repository URL.
 
 ## Support Policy

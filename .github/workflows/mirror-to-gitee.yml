@@ -14,7 +14,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Mirror to Gitee
+      - name: Mirror branches and tags to Gitee
         run: |
           git remote add gitee https://oauth2:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ vars.GITEE_REPOSITORY }}.git
-          git push --mirror gitee
+          git push gitee refs/heads/*:refs/heads/*
+          if git show-ref --tags --quiet; then
+            git push gitee refs/tags/*:refs/tags/*
+          else
+            echo "No tags to mirror."
+          fi
