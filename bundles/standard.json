@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "name": "standard",
+  "type": "distribution-bundle",
+  "description": "The complete Wonder Mountain public OpenCode skill set currently distributed to users. Bundle metadata is for maintainers; installation still copies each skill from skills/<skill-name>/ into ~/.config/opencode/skills/.",
+  "installLayout": "flat-skills-directory",
+  "includedBundles": [
+    "superpowers"
+  ],
+  "skills": [
+    "brainstorming",
+    "dispatching-parallel-agents",
+    "executing-plans",
+    "find-skills",
+    "finishing-a-development-branch",
+    "frontend-design",
+    "receiving-code-review",
+    "requesting-code-review",
+    "skill-creator",
+    "subagent-driven-development",
+    "systematic-debugging",
+    "test-driven-development",
+    "using-git-worktrees",
+    "using-superpowers",
+    "verification-before-completion",
+    "writing-plans",
+    "writing-skills"
+  ]
+}

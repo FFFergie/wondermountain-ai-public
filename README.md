@@ -15,7 +15,8 @@ Users can give OpenCode this repository URL with the following prompt:
 ## What This Repository Contains
 
 - `configs/opencode.example.json`: OpenCode 配置模板，用于记录第三方 AI API、模型名称和模型参数。
-- `skills/`: 常用 skills 的离线分发目录，避免依赖 `npx`、Node.js、GitHub 网络或 skills.sh。
+- `skills/`: 常用 skills 的离线分发目录，保持 `skills/<skill-name>/` 平铺结构，方便直接复制到 OpenCode。
+- `bundles/`: skill bundle manifests for maintainers, such as `bundles/superpowers.json` and `bundles/standard.json`.
 - `scripts/doctor.sh`: macOS/Linux read-only environment check before installation.
 - `scripts/doctor.ps1`: Windows PowerShell read-only environment check before installation.
 - `scripts/install.sh`: macOS 可选安装脚本。
@@ -68,6 +69,23 @@ When a user gives this Gitee repository to OpenCode, the AI agent should:
 7. Copy skill folders from `skills/` into `~/.config/opencode/skills/`.
 8. If the user already has an OpenCode config file, merge model/provider settings manually after reviewing both files.
 9. Tell the user what changed and where the backup is stored.
+
+## Skill Bundles
+
+OpenCode installation expects a flat directory layout:
+
+```text
+skills/<skill-name>/SKILL.md
+```
+
+For that reason, this repository keeps every vendored skill directly under `skills/`. Bundle files under `bundles/` are maintainer metadata only; they group related flat skill directories without changing the install layout.
+
+Current bundle manifests:
+
+- `bundles/superpowers.json`: all skills imported from `obra/superpowers` as one source bundle.
+- `bundles/standard.json`: the complete Wonder Mountain public skill set distributed by this repository.
+
+Agents should still copy skill folders from `skills/` into `~/.config/opencode/skills/`. Do not copy `bundles/` into the OpenCode skills directory.
 
 ## Optional Script Usage
 

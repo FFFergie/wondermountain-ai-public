@@ -59,6 +59,9 @@ forbid_regex() {
 require_file "README.md"
 require_file ".gitignore"
 require_file "configs/opencode.example.json"
+require_dir "bundles"
+require_file "bundles/superpowers.json"
+require_file "bundles/standard.json"
 require_dir "skills"
 require_file "skills/README.md"
 require_file "scripts/install.sh"
@@ -76,6 +79,9 @@ require_text "README.md" "Gitee"
 require_text "README.md" "AI agent"
 require_text "README.md" "scripts/doctor.sh"
 require_text "README.md" "User Prompt For OpenCode"
+require_text "README.md" "Skill Bundles"
+require_text "README.md" "bundles/superpowers.json"
+require_text "README.md" "flat"
 require_text "scripts/install.sh" 'CONFIG_DIR="$HOME/.config/opencode"'
 require_text "scripts/install.ps1" 'Join-Path $HOME ".config/opencode"'
 require_text "scripts/doctor.sh" 'CONFIG_DIR="$HOME/.config/opencode"'
@@ -101,6 +107,9 @@ require_text "docs/maintainer-guide.md" "skills-lock.json"
 require_text "docs/maintainer-guide.md" "bs779517/story-skills"
 require_text "docs/maintainer-guide.md" "Installation Smoke Test"
 require_text "docs/maintainer-guide.md" "PRIVATE_FORBIDDEN_PATTERNS"
+require_text "docs/maintainer-guide.md" "Skill Bundles"
+require_text "docs/maintainer-guide.md" "bundles/superpowers.json"
+require_text "AGENTS.md" "bundle manifests"
 require_text ".github/workflows/mirror-to-gitee.yml" "git push --mirror gitee"
 require_text "configs/opencode.example.json" "wonder-mountain"
 require_text "configs/opencode.example.json" "Do not commit API keys, endpoint secrets, account tokens, or personal credentials into this file."
@@ -142,6 +151,7 @@ with lock_path.open("r", encoding="utf-8") as handle:
     lock = json.load(handle)
 
 locked_paths = {item.get("skillPath") for item in lock.get("skills", {}).values()}
+locked_skill_names = set(lock.get("skills", {}).keys())
 for name, item in sorted(lock.get("skills", {}).items()):
     skill_path = root / item["skillPath"]
     if not skill_path.is_file():
@@ -154,6 +164,40 @@ for skill_file in sorted((root / "skills").glob("*/SKILL.md")):
     rel = str(skill_file.relative_to(root))
     if rel not in locked_paths:
         raise SystemExit(f"Skill missing from skills-lock.json: {rel}")
+
+bundle_dir = root / "bundles"
+for bundle_path in sorted(bundle_dir.glob("*.json")):
+    with bundle_path.open("r", encoding="utf-8") as handle:
+        bundle = json.load(handle)
+    for required in ("version", "name", "description", "installLayout", "skills"):
+        if required not in bundle:
+            raise SystemExit(f"Bundle {bundle_path.name} is missing {required}")
+    if bundle["installLayout"] != "flat-skills-directory":
+        raise SystemExit(f"Bundle {bundle_path.name} must use flat-skills-directory installLayout")
+    skills = bundle["skills"]
+    if not isinstance(skills, list) or not skills:
+        raise SystemExit(f"Bundle {bundle_path.name} must list at least one skill")
+    if len(skills) != len(set(skills)):
+        raise SystemExit(f"Bundle {bundle_path.name} has duplicate skills")
+    for skill_name in skills:
+        if skill_name not in locked_skill_names:
+            raise SystemExit(f"Bundle {bundle_path.name} references unlocked skill: {skill_name}")
+        if not (root / "skills" / skill_name / "SKILL.md").is_file():
+            raise SystemExit(f"Bundle {bundle_path.name} references missing skill: {skill_name}")
+        source = bundle.get("source")
+        if source and lock["skills"][skill_name].get("source") != source:
+            raise SystemExit(f"Bundle {bundle_path.name} source mismatch for skill: {skill_name}")
+
+superpowers_bundle = json.loads((root / "bundles" / "superpowers.json").read_text(encoding="utf-8"))
+expected_superpowers = sorted(
+    name for name, item in lock.get("skills", {}).items() if item.get("source") == "obra/superpowers"
+)
+if sorted(superpowers_bundle["skills"]) != expected_superpowers:
+    raise SystemExit("bundles/superpowers.json does not match all obra/superpowers skills in skills-lock.json")
+
+standard_bundle = json.loads((root / "bundles" / "standard.json").read_text(encoding="utf-8"))
+if sorted(standard_bundle["skills"]) != sorted(locked_skill_names):
+    raise SystemExit("bundles/standard.json must list every locked skill")
 PY
 
 bash "$ROOT_DIR/tests/test-import-skill.sh"

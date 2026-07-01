@@ -16,6 +16,7 @@
 ## Skills
 
 - Vendored skills live directly under `skills/<skill-name>/SKILL.md` and are copied to `~/.config/opencode/skills/`.
+- Keep `skills/` flat for installation. Use `bundles/*.json` bundle manifests to group skills by source or distribution set; do not nest bundle directories under `skills/`.
 - User installation must not require `npx`, Node.js, GitHub, or skills.sh network access.
 - Maintainers can import from skills.sh with `bash scripts/import-skill.sh` or `powershell -ExecutionPolicy Bypass -File scripts/import-skill.ps1`, then paste the original `npx skills add ... --skill ...` command.
 - The importer intentionally rewrites the target to `DISABLE_TELEMETRY=1 npx skills add <source> --skill <name> -a openclaw --copy -y`, rejects `--agent`/`-a`/`--global`/`-g`, and updates `skills-lock.json`.

@@ -18,6 +18,22 @@ This guide is for Wonder Mountain maintainers.
 3. Keep skills self-contained so installation does not require `npx`, Node.js, GitHub, or skills.sh.
 4. Run `bash tests/validate-project.sh` before publishing.
 
+## Skill Bundles
+
+`skills/` remains a flat OpenCode install directory. Do not nest source packages under `skills/superpowers/` or similar names, because the installer copies each immediate child of `skills/` into `~/.config/opencode/skills/`.
+
+Use bundle manifests for maintainer grouping instead:
+
+- `bundles/superpowers.json` records the complete `obra/superpowers` source bundle.
+- `bundles/standard.json` records the full Wonder Mountain public distribution bundle.
+
+When adding, removing, or updating bundled skills:
+
+1. Keep the real skill directory at `skills/<skill-name>/`.
+2. Update `skills-lock.json` with the source and skill path.
+3. Update the relevant bundle manifest under `bundles/`.
+4. Run `bash tests/validate-project.sh`; it checks that bundle manifests only reference locked skills and that `bundles/superpowers.json` matches all `obra/superpowers` skills.
+
 ## Import Skills From skills.sh
 
 Use this workflow only on a maintainer machine. Employees should still install from this repository, not from skills.sh.
